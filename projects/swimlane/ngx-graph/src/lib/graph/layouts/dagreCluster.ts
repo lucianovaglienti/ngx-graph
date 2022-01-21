@@ -3,7 +3,7 @@ import { Graph } from '../../models/graph.model';
 import { id } from '../../utils/id';
 import * as dagre from 'dagre';
 import { Edge } from '../../models/edge.model';
-import { Node, ClusterNode } from '../../models/node.model';
+import { Node, ClusterNode, NodeData } from '../../models/node.model';
 import { DagreSettings, Orientation } from './dagre';
 
 export class DagreClusterLayout implements Layout {
@@ -24,7 +24,9 @@ export class DagreClusterLayout implements Layout {
   dagreClusters: ClusterNode[];
   dagreEdges: any;
 
-  run(graph: Graph): Graph {
+  run<T = any, R extends Partial<NodeData> = any, V extends Partial<NodeData> = any>(
+    graph: Graph<T, R, V>
+  ): Graph<T, R, V> {
     this.createDagreGraph(graph);
     dagre.layout(this.dagreGraph);
 
@@ -50,7 +52,10 @@ export class DagreClusterLayout implements Layout {
     return graph;
   }
 
-  updateEdge(graph: Graph, edge: Edge): Graph {
+  updateEdge<T = any, R extends Partial<NodeData> = any, V extends Partial<NodeData> = any>(
+    graph: Graph<T, R, V>,
+    edge: Edge<T>
+  ): Graph<T, R, V> {
     const sourceNode = graph.nodes.find(n => n.id === edge.source);
     const targetNode = graph.nodes.find(n => n.id === edge.target);
 
@@ -70,7 +75,9 @@ export class DagreClusterLayout implements Layout {
     return graph;
   }
 
-  createDagreGraph(graph: Graph): any {
+  createDagreGraph<T = any, R extends Partial<NodeData> = any, V extends Partial<NodeData> = any>(
+    graph: Graph<T, R, V>
+  ): any {
     const settings = Object.assign({}, this.defaultSettings, this.settings);
     this.dagreGraph = new dagre.graphlib.Graph({ compound: settings.compound, multigraph: settings.multigraph });
     this.dagreGraph.setGraph({

@@ -31,7 +31,7 @@ import { identity, scale, smoothMatrix, toSVG, transform, translate } from 'tran
 import { Layout } from '../models/layout.model';
 import { LayoutService } from './layouts/layout.service';
 import { Edge } from '../models/edge.model';
-import { Node, ClusterNode } from '../models/node.model';
+import { Node, ClusterNode, NodeData } from '../models/node.model';
 import { Graph } from '../models/graph.model';
 import { id } from '../utils/id';
 import { PanningAxis } from '../enums/panning.enum';
@@ -65,10 +65,12 @@ export interface Matrix {
     ])
   ]
 })
-export class GraphComponent implements OnInit, OnChanges, OnDestroy, AfterViewInit {
-  @Input() nodes: Node[] = [];
-  @Input() clusters: ClusterNode[] = [];
-  @Input() links: Edge[] = [];
+export class GraphComponent<T = any, R extends Partial<NodeData> = any, V extends Partial<NodeData> = any>
+  implements OnInit, OnChanges, OnDestroy, AfterViewInit
+{
+  @Input() nodes: Node<R>[] = [];
+  @Input() clusters: ClusterNode<V>[] = [];
+  @Input() links: Edge<T>[] = [];
   @Input() activeEntries: any[] = [];
   @Input() curve: any;
   @Input() draggingEnabled = true;
@@ -133,9 +135,9 @@ export class GraphComponent implements OnInit, OnChanges, OnDestroy, AfterViewIn
   isDragging = false;
   draggingNode: Node;
   initialized = false;
-  graph: Graph;
+  graph: Graph<T, R, V>;
   graphDims: any = { width: 0, height: 0 };
-  _oldLinks: Edge[] = [];
+  _oldLinks: Edge<T>[] = [];
   oldNodes: Set<string> = new Set();
   oldClusters: Set<string> = new Set();
   transformationMatrix: Matrix = identity();
@@ -425,7 +427,7 @@ export class GraphComponent implements OnInit, OnChanges, OnDestroy, AfterViewIn
         n.position.y - n.dimension.height / 2 || 0
       })`;
       if (!n.data) {
-        n.data = {};
+        n.data = {} as R;
       }
       n.data.color = this.colors.getColor(this.groupResultsBy(n));
       oldNodes.add(n.id);
@@ -438,7 +440,7 @@ export class GraphComponent implements OnInit, OnChanges, OnDestroy, AfterViewIn
         n.position.y - n.dimension.height / 2 || 0
       })`;
       if (!n.data) {
-        n.data = {};
+        n.data = {} as V;
       }
       n.data.color = this.colors.getColor(this.groupResultsBy(n));
       oldClusters.add(n.id);

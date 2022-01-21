@@ -8,16 +8,20 @@ export interface NodeDimension {
   height: number;
 }
 
-export interface Node {
+export interface NodeData {
+  color?: string;
+}
+
+export interface Node<T extends Partial<NodeData> = any> {
   id: string;
   position?: NodePosition;
   dimension?: NodeDimension;
   transform?: string;
   label?: string;
-  data?: any;
+  data?: T;
   meta?: any;
 }
 
-export interface ClusterNode extends Node {
+export interface ClusterNode<T extends Partial<NodeData> = any> extends Node<T> {
   childNodeIds?: string[];
 }

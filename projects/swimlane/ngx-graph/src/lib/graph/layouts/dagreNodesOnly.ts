@@ -4,6 +4,7 @@ import { id } from '../../utils/id';
 import * as dagre from 'dagre';
 import { Edge } from '../../models/edge.model';
 import { DagreSettings, Orientation } from './dagre';
+import { Node, NodeData } from '../../models/node.model';
 
 export interface DagreNodesOnlySettings extends DagreSettings {
   curveDistance?: number;
@@ -31,7 +32,9 @@ export class DagreNodesOnlyLayout implements Layout {
   dagreNodes: any;
   dagreEdges: any;
 
-  run(graph: Graph): Graph {
+  run<T = any, R extends Partial<NodeData> = any, V extends Partial<NodeData> = any>(
+    graph: Graph<T, R, V>
+  ): Graph<T, R, V> {
     this.createDagreGraph(graph);
     dagre.layout(this.dagreGraph);
 
@@ -56,7 +59,10 @@ export class DagreNodesOnlyLayout implements Layout {
     return graph;
   }
 
-  updateEdge(graph: Graph, edge: Edge): Graph {
+  updateEdge<T = any, R extends Partial<NodeData> = any, V extends Partial<NodeData> = any>(
+    graph: Graph<T, R, V>,
+    edge: Edge<T>
+  ): Graph<T, R, V> {
     const sourceNode = graph.nodes.find(n => n.id === edge.source);
     const targetNode = graph.nodes.find(n => n.id === edge.target);
     const rankAxis: 'x' | 'y' = this.settings.orientation === 'BT' || this.settings.orientation === 'TB' ? 'y' : 'x';
@@ -95,7 +101,9 @@ export class DagreNodesOnlyLayout implements Layout {
     return graph;
   }
 
-  createDagreGraph(graph: Graph): any {
+  createDagreGraph<T = any, R extends Partial<NodeData> = any, V extends Partial<NodeData> = any>(
+    graph: Graph<T, R, V>
+  ): any {
     const settings = Object.assign({}, this.defaultSettings, this.settings);
     this.dagreGraph = new dagre.graphlib.Graph({ compound: settings.compound, multigraph: settings.multigraph });
     this.dagreGraph.setGraph({

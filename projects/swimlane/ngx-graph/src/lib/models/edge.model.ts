@@ -1,11 +1,11 @@
 import { NodePosition } from './node.model';
 
-export interface Edge {
+export interface Edge<T = any> {
   id?: string;
   source: string;
   target: string;
   label?: string;
-  data?: any;
+  data?: T;
   points?: any;
   line?: string;
   textTransform?: string;

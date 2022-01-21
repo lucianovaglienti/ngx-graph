@@ -1,6 +1,6 @@
 import { Layout } from '../../models/layout.model';
 import { Graph } from '../../models/graph.model';
-import { Node } from '../../models/node.model';
+import { Node, NodeData } from '../../models/node.model';
 import { id } from '../../utils/id';
 import { forceCollide, forceLink, forceManyBody, forceSimulation } from 'd3-force';
 import { Edge } from '../../models/edge.model';
@@ -60,7 +60,9 @@ export class D3ForceDirectedLayout implements Layout {
 
   draggingStart: { x: number; y: number };
 
-  run(graph: Graph): Observable<Graph> {
+  run<T = any, R extends Partial<NodeData> = any, V extends Partial<NodeData> = any>(
+    graph: Graph<T, R, V>
+  ): Observable<Graph<T, R, V>> {
     this.inputGraph = graph;
     this.d3Graph = {
       nodes: [...this.inputGraph.nodes.map(n => ({ ...n }))] as any,
@@ -87,7 +89,10 @@ export class D3ForceDirectedLayout implements Layout {
     return this.outputGraph$.asObservable();
   }
 
-  updateEdge(graph: Graph, edge: Edge): Observable<Graph> {
+  updateEdge<T = any, R extends Partial<NodeData> = any, V extends Partial<NodeData> = any>(
+    graph: Graph<T, R, V>,
+    edge: Edge<T>
+  ): Observable<Graph<T, R, V>> {
     const settings = Object.assign({}, this.defaultSettings, this.settings);
     if (settings.force) {
       settings.force
@@ -103,7 +108,9 @@ export class D3ForceDirectedLayout implements Layout {
     return this.outputGraph$.asObservable();
   }
 
-  d3GraphToOutputGraph(d3Graph: D3Graph): Graph {
+  d3GraphToOutputGraph<T = any, R extends Partial<NodeData> = any, V extends Partial<NodeData> = any>(
+    d3Graph: D3Graph
+  ): Graph<T, R, V> {
     this.outputGraph.nodes = this.d3Graph.nodes.map((node: MergedNode) => ({
       ...node,
       id: node.id || id(),
@@ -140,7 +147,7 @@ export class D3ForceDirectedLayout implements Layout {
     return this.outputGraph;
   }
 
-  onDragStart(draggingNode: Node, $event: MouseEvent): void {
+  onDragStart<R extends Partial<NodeData> = any>(draggingNode: Node<R>, $event: MouseEvent): void {
     this.settings.force.alphaTarget(0.3).restart();
     const node = this.d3Graph.nodes.find(d3Node => d3Node.id === draggingNode.id);
     if (!node) {
@@ -151,7 +158,7 @@ export class D3ForceDirectedLayout implements Layout {
     node.fy = $event.y - this.draggingStart.y;
   }
 
-  onDrag(draggingNode: Node, $event: MouseEvent): void {
+  onDrag<R extends Partial<NodeData> = any>(draggingNode: Node<R>, $event: MouseEvent): void {
     if (!draggingNode) {
       return;
     }
@@ -163,7 +170,7 @@ export class D3ForceDirectedLayout implements Layout {
     node.fy = $event.y - this.draggingStart.y;
   }
 
-  onDragEnd(draggingNode: Node, $event: MouseEvent): void {
+  onDragEnd<R extends Partial<NodeData> = any>(draggingNode: Node<R>, $event: MouseEvent): void {
     if (!draggingNode) {
       return;
     }

@@ -1,6 +1,6 @@
 import { Layout } from '../../models/layout.model';
 import { Graph } from '../../models/graph.model';
-import { Node, ClusterNode } from '../../models/node.model';
+import { Node, ClusterNode, NodeData } from '../../models/node.model';
 import { id } from '../../utils/id';
 import { d3adaptor, ID3StyleLayoutAdaptor, Layout as ColaLayout, Group, InputNode, Link, Rectangle } from 'webcola';
 import * as d3Dispatch from 'd3-dispatch';
@@ -51,7 +51,9 @@ export class ColaForceDirectedLayout implements Layout {
 
   draggingStart: { x: number; y: number };
 
-  run(graph: Graph): Observable<Graph> {
+  run<T = any, R extends Partial<NodeData> = any, V extends Partial<NodeData> = any>(
+    graph: Graph<T, R, V>
+  ): Observable<Graph<T, R, V>> {
     this.inputGraph = graph;
     if (!this.inputGraph.clusters) {
       this.inputGraph.clusters = [];
@@ -141,7 +143,10 @@ export class ColaForceDirectedLayout implements Layout {
     return this.outputGraph$.asObservable();
   }
 
-  updateEdge(graph: Graph, edge: Edge): Observable<Graph> {
+  updateEdge<T = any, R extends Partial<NodeData> = any, V extends Partial<NodeData> = any>(
+    graph: Graph<T, R, V>,
+    edge: Edge<T>
+  ): Observable<Graph<T, R, V>> {
     const settings = Object.assign({}, this.defaultSettings, this.settings);
     if (settings.force) {
       settings.force.start();
@@ -150,7 +155,9 @@ export class ColaForceDirectedLayout implements Layout {
     return this.outputGraph$.asObservable();
   }
 
-  internalGraphToOutputGraph(internalGraph: any): Graph {
+  internalGraphToOutputGraph<T = any, R extends Partial<NodeData> = any, V extends Partial<NodeData> = any>(
+    internalGraph: any
+  ): Graph<T, R, V> {
     this.outputGraph.nodes = internalGraph.nodes.map(node => ({
       ...node,
       id: node.id || id(),
@@ -201,27 +208,25 @@ export class ColaForceDirectedLayout implements Layout {
         })
       );
 
-    this.outputGraph.clusters = internalGraph.groups.map(
-      (group, index): ClusterNode => {
-        const inputGroup = this.inputGraph.clusters[index];
-        return {
-          ...inputGroup,
-          dimension: {
-            width: group.bounds ? group.bounds.width() : 20,
-            height: group.bounds ? group.bounds.height() : 20
-          },
-          position: {
-            x: group.bounds ? group.bounds.x + group.bounds.width() / 2 : 0,
-            y: group.bounds ? group.bounds.y + group.bounds.height() / 2 : 0
-          }
-        };
-      }
-    );
+    this.outputGraph.clusters = internalGraph.groups.map((group, index): ClusterNode => {
+      const inputGroup = this.inputGraph.clusters[index];
+      return {
+        ...inputGroup,
+        dimension: {
+          width: group.bounds ? group.bounds.width() : 20,
+          height: group.bounds ? group.bounds.height() : 20
+        },
+        position: {
+          x: group.bounds ? group.bounds.x + group.bounds.width() / 2 : 0,
+          y: group.bounds ? group.bounds.y + group.bounds.height() / 2 : 0
+        }
+      };
+    });
     this.outputGraph.edgeLabels = this.outputGraph.edges;
     return this.outputGraph;
   }
 
-  onDragStart(draggingNode: Node, $event: MouseEvent): void {
+  onDragStart<R extends Partial<NodeData> = any>(draggingNode: Node<R>, $event: MouseEvent): void {
     const nodeIndex = this.outputGraph.nodes.findIndex(foundNode => foundNode.id === draggingNode.id);
     const node = this.internalGraph.nodes[nodeIndex];
     if (!node) {
@@ -232,7 +237,7 @@ export class ColaForceDirectedLayout implements Layout {
     this.settings.force.start();
   }
 
-  onDrag(draggingNode: Node, $event: MouseEvent): void {
+  onDrag<R extends Partial<NodeData> = any>(draggingNode: Node<R>, $event: MouseEvent): void {
     if (!draggingNode) {
       return;
     }
@@ -245,7 +250,7 @@ export class ColaForceDirectedLayout implements Layout {
     node.y = this.draggingStart.y + $event.y;
   }
 
-  onDragEnd(draggingNode: Node, $event: MouseEvent): void {
+  onDragEnd<R extends Partial<NodeData> = any>(draggingNode: Node<R>, $event: MouseEvent): void {
     if (!draggingNode) {
       return;
     }
